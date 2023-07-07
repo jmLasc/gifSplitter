@@ -2,26 +2,23 @@ import sys
 import os
 from PIL import Image
 
-# Ensuring initial command line input is proper
-
+# Check that initial command line input is proper
 try:
     target = sys.argv[1]
-    mode = sys.argv[2]
 except:
     print("Not all args supplied")
-    print("Format: py .\main.py [path] [i/t]")
+    print("Format: py .\main.py [target]")
     exit()
 
-if not (os.path.isdir(target) or os.path.isfile(target)):
-    print("The path is not a valid folder or file.")
+if not (os.path.isfile(target)):
+    print("The target is a file that does not exist.")
     exit()
 
-if not (mode == 'i' or mode == 't'):
-    print("The mode must be either i or t.")
-    # exit()
+if (os.path.splitext(target)[1].lower() != ".gif"):
+    print("Target file is not a gif")
+    exit()
 
 # Processing
-
 gif = Image.open(target)
 frames = []
 
@@ -33,6 +30,7 @@ try:
 except EOFError:
     pass
 
+#Image Creation
 width, height = gif.size
 finalWidth = width * len(frames)
 toSave = Image.new("RGBA", (finalWidth, height))
@@ -42,4 +40,21 @@ for frame in frames:
     toSave.paste(frame, (offset, 0))
     offset += width
 
-toSave.save("./output.png")
+#Saving Output
+destination = "./output"
+if not os.path.exists(destination):
+    os.makedirs(destination)
+    print("Output directory not found, making folder 'output'.")
+
+#Checking for duplicates
+output = "output.png"
+if os.path.exists("output/output.png"):
+    suffix=1
+    name, extension = os.path.splitext(output)
+    while os.path.exists("{0}/{1}-{2}{3}".format(destination, name, suffix, extension)):
+        suffix += 1
+    output = "{0}-{1}{2}".format(name, suffix, extension)
+
+toSave.save("{0}/{1}".format(destination, output))
+
+print("Operation complete.")
